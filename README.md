@@ -78,6 +78,18 @@ for _, item := range users {
 }
 ```
 
+**查询所有**
+```
+query := mgodb.Query{QueryDoc: bson.M{}, Limit: 0, Skip: 0}
+users, err := models.FindUsers(query) //查询所有用户
+```
+
+**批量查询选择指定字段**
+```
+query := mgodb.Query{QueryDoc: bson.M{},[]string{"username"}, Limit: 0, Skip: 0}
+users, err := models.FindUsers(query) //查询所有用户
+```
+如果不指定，则查出所有字段
 
 ### Hooks ###
 
