@@ -13,7 +13,7 @@ type Query struct {
 	Limit      int
 	Skip       int
 	sortFields []string
-	Selector []string
+	Selector map[string]bool
 }
 
 var (
@@ -36,6 +36,12 @@ func (self *Query) SetSort(doc interface{}, sorted string) (err error) {
 	}
 	return nil
 
+}
+
+// Example:
+// query.SetSortFields([]string{"name","-createdat"})
+func (self *Query)SetSortFields(sorts []string) {
+	self.sortFields = sorts
 }
 
 type Model struct {
@@ -96,11 +102,7 @@ func (self *Model) FindAll(query Query, docs interface{}) (err error) {
 	}
 
 	if len(query.Selector) > 0 {
-		selector := bson.M{}
-		for _, v := range query.Selector {
-			selector[v] = 1
-		}
-		mgoQuery.Select(selector)
+		mgoQuery.Select(query.Selector)
 	}
 
 	return mgoQuery.All(docs)
