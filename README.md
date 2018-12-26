@@ -86,10 +86,30 @@ users, err := models.FindUsers(query) //查询所有用户
 
 **批量查询选择指定字段**
 ```
-query := mgodb.Query{QueryDoc: bson.M{},[]string{"username"}, Limit: 0, Skip: 0}
+query := mgodb.Query{QueryDoc: bson.M{},Selector: map[string]bool{"name": true}, Limit: 0, Skip: 0}
 users, err := models.FindUsers(query) //查询所有用户
 ```
 如果不指定，则查出所有字段
+
+**排序**
+```
+query := mgodb.Query{
+    Limit:    size,
+		Skip:     (page - 1) * size,
+		Selector: map[string]bool{"name": true},
+	}
+
+query.SetSortFields([]string{"name"})
+
+if userGroup != nil {
+	query.QueryDoc = userGroup
+} else {
+	query.QueryDoc = bson.M{}
+}
+
+ug := model.NewUserGroup()
+err = ug.FindAll(query, &userGroups)
+    ```
 
 ### Hooks ###
 
