@@ -13,6 +13,7 @@ type Query struct {
 	Limit      int
 	Skip       int
 	sortFields []string
+	Selector []string
 }
 
 var (
@@ -93,6 +94,15 @@ func (self *Model) FindAll(query Query, docs interface{}) (err error) {
 	if len(query.sortFields) > 0 {
 		mgoQuery.Sort(query.sortFields...)
 	}
+
+	if len(query.Selector) > 0 {
+		selector := bson.M{}
+		for _, v := range query.Selector {
+			selector[v] = 1
+		}
+		mgoQuery.Select(selector)
+	}
+
 	return mgoQuery.All(docs)
 }
 
