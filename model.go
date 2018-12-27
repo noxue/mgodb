@@ -13,7 +13,7 @@ type Query struct {
 	Limit      int
 	Skip       int
 	sortFields []string
-	Selector map[string]bool
+	Selector   map[string]bool
 }
 
 var (
@@ -40,7 +40,7 @@ func (self *Query) SetSort(doc interface{}, sorted string) (err error) {
 
 // Example:
 // query.SetSortFields([]string{"name","-createdat"})
-func (self *Query)SetSortFields(sorts []string) {
+func (self *Query) SetSortFields(sorts []string) {
 	self.sortFields = sorts
 }
 
@@ -87,6 +87,7 @@ func (self *Model) MergeDoc(docOld interface{}, docNew interface{}) error {
 }
 
 func (self *Model) FindAll(query Query, docs interface{}) (err error) {
+
 	var mgoQuery *mgo.Query
 	if mgoQuery, err = self.getQueryByFields(query.QueryDoc); err != nil {
 		return err
@@ -97,11 +98,11 @@ func (self *Model) FindAll(query Query, docs interface{}) (err error) {
 	if query.Limit > 0 {
 		mgoQuery.Limit(query.Limit)
 	}
-	if len(query.sortFields) > 0 {
+	if query.sortFields != nil && len(query.sortFields) > 0 {
 		mgoQuery.Sort(query.sortFields...)
 	}
 
-	if len(query.Selector) > 0 {
+	if query.Selector != nil && len(query.Selector) > 0 {
 		mgoQuery.Select(query.Selector)
 	}
 
@@ -162,13 +163,17 @@ func (self *Model) getQueryByFields(queryDoc interface{}) (*mgo.Query, error) {
 	if err := self.setValues(); err != nil {
 		return nil, err
 	}
+
 	var query bson.M
-	var err error
-	if reflect.ValueOf(queryDoc).IsNil() {
-		queryDoc = self.doc
-	}
-	if query, err = docToBson(queryDoc); err != nil {
-		return nil, err
+	// 如果条件不为空，则转换到bson.M类型用于查询
+	if queryDoc != nil {
+		var err error
+		if reflect.ValueOf(queryDoc).IsNil() {
+			queryDoc = self.doc
+		}
+		if query, err = docToBson(queryDoc); err != nil {
+			return nil, err
+		}
 	}
 	return DbmInstance.Find(self.collectionName, query), nil
 }
